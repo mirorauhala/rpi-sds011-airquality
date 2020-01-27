@@ -6,15 +6,16 @@ import json
 import schedule
 import time
 from datetime import datetime
+import os
 
 def setReading(reading, type):
     try:
         connection = psycopg2.connect(
-            host="192.168.86.89",
-            port=5433,
-            dbname="airquality",
-            user="postgres",
-            password="postgres"
+            host=os.environ['PG_HOST'],
+            port=os.environ['PG_PORT'],
+            dbname=os.environ['PG_DB'],
+            user=os.environ['PG_USER'],
+            password=os.environ['PG_PASS']
         )
         cursor = connection.cursor()
         cursor.execute("INSERT INTO readings (reading, type) VALUES (%s, %s);", (float(reading), type) )
@@ -30,28 +31,28 @@ def setReading(reading, type):
 def getAirQuality():
     on()
     time.sleep(15)
-    sensor = SDS011("/dev/tty.usbserial-14310", use_query_mode=True)
+    sensor = SDS011(os.environ['USB_DEVICE'], use_query_mode=True)
     data = sensor.query()
     off()
     return data
 
 def getTemperature():
-    hue = Bridge('192.168.86.157')
+    hue = Bridge(os.environ['HUE_IP'])
     return hue.get_sensor(22)['state']['temperature'] / 100
 
 def off():
-    sensor = SDS011("/dev/tty.usbserial-14310", use_query_mode=True)
+    sensor = SDS011(os.environ['USB_DEVICE'], use_query_mode=True)
     sensor.sleep(sleep=True)
 
 def on():
-    sensor = SDS011("/dev/tty.usbserial-14310", use_query_mode=True)
+    sensor = SDS011(os.environ['USB_DEVICE'], use_query_mode=True)
     sensor.sleep(sleep=False)
 
 def measurement():
     print("Getting temperature")
 
-    temperature = getTemperature()
-
+    if os.environ['USE_HUE']:
+        temperature = getTemperature()
 
     print("Getting air quality")
     airquality = getAirQuality()
@@ -66,6 +67,13 @@ def measurement():
 
 
 schedule.every(1).hour.do(measurement)
+
+print("PG_HOST: " + os.environ['PG_HOST'])
+print("PG_PORT: " + os.environ['PG_PORT'])
+print("PG_DB: " + os.environ['PG_DB'])
+print("PG_USER: " + os.environ['PG_USER'])
+print("PG_PASS: " + os.environ['PG_PASS'])
+print("USE_HUE: " + os.environ['USE_HUE'])
 
 while True:
     schedule.run_pending()
