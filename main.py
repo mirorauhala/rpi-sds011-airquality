@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import requests
 from phue import Bridge
 from sds011 import SDS011
