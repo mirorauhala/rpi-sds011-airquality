@@ -20,4 +20,9 @@ RUN \
  python3 -m pip install -r requirements.txt --no-cache-dir && \
  apk --purge del .build-deps
 
+RUN apk add tzdata
+RUN cp /usr/share/zoneinfo/Europe/Helsinki /etc/localtime
+RUN echo "Europe/Helsinki" > /etc/timezone
+RUN apk del tzdata
+
 CMD ["python3", "main.py"]
