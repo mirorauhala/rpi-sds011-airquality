@@ -7,6 +7,10 @@ git clone https://github.com/mirorauhala/rpi-sds011-airquality
 ```
 
 ```
+cd rpi-sds011-airquality
+```
+
+```
 docker build .
 ```
 
